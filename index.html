@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#090b0f">
+  <title>Nine Men's Morris</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <main class="app">
+    <header class="hero">
+      <p class="eyebrow">A CLASSIC STRATEGY GAME</p>
+      <h1>NINE MEN'S <span>MORRIS</span></h1>
+    </header>
+
+    <section class="scoreboard" aria-label="ゲーム情報">
+      <article class="player p1 active" id="player-1-card">
+        <div><span class="stone-sample white"></span><strong>PLAYER 1</strong></div>
+        <dl><div><dt>BOARD</dt><dd id="p1-board">0</dd></div><div><dt>STOCK</dt><dd id="p1-stock">9</dd></div></dl>
+      </article>
+      <div class="game-state"><span id="phase">PLACE</span><strong id="turn">P1 TURN</strong></div>
+      <article class="player p2" id="player-2-card">
+        <div><span class="stone-sample red"></span><strong>PLAYER 2</strong></div>
+        <dl><div><dt>BOARD</dt><dd id="p2-board">0</dd></div><div><dt>STOCK</dt><dd id="p2-stock">9</dd></div></dl>
+      </article>
+    </section>
+
+    <section class="instruction" aria-live="polite">
+      <span id="instruction-label">PLAYER 1</span>
+      <strong id="instruction">石を配置してください</strong>
+    </section>
+
+    <section class="board-wrap">
+      <svg id="board" viewBox="0 0 700 700" role="group" aria-label="Nine Men's Morris ゲーム盤">
+        <g class="board-lines" aria-hidden="true">
+          <rect x="70" y="70" width="560" height="560"/><rect x="165" y="165" width="370" height="370"/><rect x="260" y="260" width="180" height="180"/>
+          <path d="M350 70V260 M350 440V630 M70 350H260 M440 350H630"/>
+        </g>
+        <g id="points"></g>
+      </svg>
+      <div id="winner" class="winner" hidden><p>GAME OVER</p><strong></strong><button type="button" id="winner-reset">NEW GAME</button></div>
+    </section>
+
+    <footer>
+      <p><span class="legend-dot selected"></span>選択中 <span class="legend-dot target"></span>移動可能</p>
+      <button type="button" id="reset">RESET GAME</button>
+    </footer>
+  </main>
+  <script src="script.js"></script>
+</body>
+</html>
