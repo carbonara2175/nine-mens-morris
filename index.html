@@ -29,6 +29,7 @@
     <section class="instruction" aria-live="polite">
       <span id="instruction-label">PLAYER 1</span>
       <strong id="instruction">石を配置してください</strong>
+      <small id="stalemate" hidden>Stalemate 0 / 10</small>
     </section>
 
     <section class="board-wrap">
@@ -39,7 +40,7 @@
         </g>
         <g id="points"></g>
       </svg>
-      <div id="winner" class="winner" hidden><p>GAME OVER</p><strong></strong><button type="button" id="winner-reset">NEW GAME</button></div>
+      <div id="winner" class="winner" hidden><p>GAME OVER</p><strong></strong><span id="winner-reason"></span><button type="button" id="winner-reset">NEW GAME</button></div>
     </section>
 
     <footer>

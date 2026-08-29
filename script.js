@@ -4,17 +4,34 @@ const ADJ=[[1,9],[0,2,4],[1,14],[4,10],[1,3,5,7],[4,13],[7,11],[4,6,8],[7,12],[0
 
 class MorrisGame{
   constructor(){this.reset()}
-  reset(){this.board=Array(24).fill(0);this.stock=[0,9,9];this.turn=1;this.selected=null;this.removing=false;this.winner=0}
+  reset(){this.board=Array(24).fill(0);this.stock=[0,9,9];this.turn=1;this.selected=null;this.removing=false;this.winner=0;this.winReason='';this.stalemateActive=false;this.stalemateTurns=0}
   count(p){return this.board.filter(x=>x===p).length}
   isMillAt(i,p){return MILLS.some(m=>m.includes(i)&&m.every(n=>this.board[n]===p))}
   removable(){const enemy=3-this.turn,all=this.board.map((p,i)=>p===enemy?i:-1).filter(i=>i>=0),outside=all.filter(i=>!this.isMillAt(i,enemy));return outside.length?outside:all}
   phase(p=this.turn){if(this.stock[1]+this.stock[2]>0)return'PLACE';return this.count(p)===3?'FLY':'MOVE'}
   targets(i){if(this.board[i]!==this.turn||this.stock[1]+this.stock[2]>0)return[];const candidates=this.count(this.turn)===3?this.board.map((_,n)=>n):ADJ[i];return candidates.filter(n=>this.board[n]===0)}
   canMove(p){if(this.count(p)===3)return this.board.includes(0);return this.board.some((v,i)=>v===p&&ADJ[i].some(n=>this.board[n]===0))}
-  finishTurn(){const enemy=3-this.turn;if(this.stock[1]+this.stock[2]===0&&(this.count(enemy)<=2||!this.canMove(enemy))){this.winner=this.turn;return}this.turn=enemy;this.selected=null}
+  finishTurn(removed=false){
+    const enemy=3-this.turn;
+    if(removed)this.stalemateTurns=0;
+    if(this.stock[1]+this.stock[2]===0){
+      if(this.count(enemy)<=2){this.winner=this.turn;this.winReason='石が2個以下';return}
+      if(!this.canMove(enemy)){this.winner=this.turn;this.winReason='合法手なし';return}
+      if(!this.stalemateActive&&(this.count(1)===3||this.count(2)===3))this.stalemateActive=true;
+      if(this.stalemateActive){
+        if(!removed)this.stalemateTurns=Math.min(10,this.stalemateTurns+1);
+        if(this.stalemateTurns===10&&this.count(1)!==this.count(2)){
+          this.winner=this.count(1)>this.count(2)?1:2;
+          this.winReason='10ターン膠着';
+          return
+        }
+      }
+    }
+    this.turn=enemy;this.selected=null
+  }
   play(i){
     if(this.winner)return false;
-    if(this.removing){if(!this.removable().includes(i))return false;this.board[i]=0;this.removing=false;this.finishTurn();return true}
+    if(this.removing){if(!this.removable().includes(i))return false;this.board[i]=0;this.removing=false;this.finishTurn(true);return true}
     if(this.stock[1]+this.stock[2]>0){if(this.board[i])return false;this.board[i]=this.turn;this.stock[this.turn]--;if(this.isMillAt(i,this.turn)&&this.count(3-this.turn)>0)this.removing=true;else this.finishTurn();return true}
     if(this.board[i]===this.turn){this.selected=i;return true}
     if(this.selected!==null&&this.targets(this.selected).includes(i)){const from=this.selected;this.board[from]=0;this.board[i]=this.turn;this.selected=null;if(this.isMillAt(i,this.turn))this.removing=true;else this.finishTurn();return true}
@@ -31,11 +48,11 @@ if(typeof document!=='undefined'){
     const targets=game.selected===null?[]:game.targets(game.selected),removable=game.removing?game.removable():[];
     [...points.children].forEach((el,i)=>{el.className.baseVal=`point ${game.board[i]?`p${game.board[i]}`:''} ${i===game.selected?'selected':''} ${targets.includes(i)?'target':''} ${removable.includes(i)?'removable':''}`;el.setAttribute('aria-label',`地点 ${i+1}${game.board[i]?` Player ${game.board[i]} の石`:''}`)});
     [1,2].forEach(p=>{$(`p${p}-board`).textContent=game.count(p);$(`p${p}-stock`).textContent=game.stock[p];$(`player-${p}-card`).classList.toggle('active',game.turn===p&&!game.winner)});
-    $('phase').textContent=game.phase();$('turn').textContent=`P${game.turn} TURN`;
+    $('phase').textContent=game.phase();$('turn').textContent=`P${game.turn} TURN`;$('stalemate').hidden=!game.stalemateActive;$('stalemate').textContent=`Stalemate ${game.stalemateTurns} / 10`;
     let label=`PLAYER ${game.turn}`,text='動かす石を選んでください';
     if(game.removing){label='MILL!';text='相手の石を1個取ってください'}else if(game.phase()==='PLACE')text='石を配置してください';else if(game.selected!==null)text='移動先を選んでください';else if(game.phase()==='FLY')text='FLY：動かす石を選んでください';
     $('instruction-label').textContent=label;$('instruction').textContent=text;
-    $('winner').hidden=!game.winner;if(game.winner)$('winner').querySelector('strong').textContent=`PLAYER ${game.winner} WIN!`;
+    $('winner').hidden=!game.winner;if(game.winner){$('winner').querySelector('strong').textContent=`PLAYER ${game.winner} WIN!`;$('winner-reason').textContent=game.winReason}
   }
   function reset(){if(game.count(1)+game.count(2)===0||confirm('ゲームを最初からやり直しますか？')){game.reset();render()}}
   $('reset').addEventListener('click',reset);$('winner-reset').addEventListener('click',()=>{game.reset();render()});render();
